@@ -75,8 +75,3 @@ df_c_tbl =  table(unlist(dfcategories))
 length(df_c_tbl)
 
 
-# 04. 정렬시키기
-dsort = sort(df_c_tbl, decreasing = TRUE)
-tail(dsort,10)
-head(dsort,100)
-

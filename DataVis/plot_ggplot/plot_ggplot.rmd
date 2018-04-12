@@ -1,0 +1,329 @@
+---
+title: "plot01"
+output: html_document
+---
+
+## 01. 변수의 특징을 찾기 위해서 사용하는 그래프
+<pre>
+(1) 하나의 변수에 대한 것.
+히스토그램(hist) : 연속형 변수 표시 
+Barplot : 명목형 변수 그래프 표시 
+Boxplot : 데이터의 분포를 본다.
+
+(2) 산포도, 산점도(두변수에 관한 것)
+</pre>
+
+## 02. plot(base), ggplot2 패키지, rCharts 패키지
+<pre>
+base plot : 빠르게 데이터 탐색용
+ggplot2 : 보다 정교한 그래프 특징 나타내기
+rCharts(d3, javascript) : Report를 위한 그래프
+</pre>
+
+## 03. 고수준 함수, 저수준 함수
+<pre>
+plot, boxplot, hist
+title, lines, points(그래프 타이틀, X축 이름, Y축 이름, 그래프 색 바꾸기)
+</pre>
+
+```{r}
+setwd("D:/bigdatacourse/data/R_2")
+DF <- read.csv("example_studentlist.csv")
+attach(DF)
+str(DF)
+DF
+```
+
+## 값을 하나 갖는 경우,
+```{r}
+plot(age)
+```
+
+## 값을 두개 갖는 경우, 
+```{r}
+sex
+par(mfrow=c(2,2))
+plot(height, weight)
+plot(weight~height)
+plot(height, sex)
+plot(sex,height)  # 성별에 따른 키의 boxplot
+```
+
+## 변수간의 관계를 표시하기 위한 필수. scatter plot
+```{r}
+names(DF)
+str(DF)
+DF2 <- data.frame(age, height, weight)
+DF2
+plot(DF2)
+```
+
+### plot의 pch 속성 
+<pre>
+점의 종류를 남자와 여자를 별도로 표시한다.
+
+</pre>
+```{r}
+#str(DF)
+#help(plot)
+par(mfrow=c(1,2))
+plot(weight~height)
+plot(weight~height, pch=as.integer(sex))
+# 간단한 저수준 함수를 추가
+```
+
+## pch
+<pre> 총 18개까지 가능하다. </pre>
+```{r}
+plot(weight~height, pch=as.integer(sex))
+legend("topleft", c("남", "여"), pch=DF$sex)
+```
+
+## coplot() 함수 
+<pre>
+명목형 변수에 대한 그래프
+Levels별 그래프를 보는 것이 목적이다.
+남녀 성별에 따른 키와 몸무게의 상관관계 
+</pre>
+```{r}
+coplot(weight~height | sex)
+```
+
+## 저수준 함수 사용해 보기 
+```{r}
+plot(weight~height, ann=FALSE)
+title(main="A와 B의 몸무게와 키의 상관관계")
+title(xlab="키", ylab="몸무게")
+grid()  # 격자 추가
+
+hMean <- mean(height)
+wMean <- mean(weight)
+abline(v=hMean, col="red")
+abline(h=wMean, col="blue")
+```
+
+## barplot
+```{r}
+tblBlood <- table(DF$bloodtype)
+tblBlood
+barplot(tblBlood)
+title(main="혈액형별 빈도수")
+title(xlab="혈액형", ylab="빈도수" )
+```
+
+## barplot 혈액형별 키의 평균
+```{r}
+Height = tapply(height,bloodtype,mean )
+Height
+barplot(Height, ylim=c(0,200))
+```
+
+## boxplot 혈액형별(levels) 키에 대한 분포 그려보기
+<pre>
+boxplot(하나변수)  # 하나의 변수의 분포
+boxplot(A ~ B)  # B에 구분별 A의 분포 (B는 범주형 변수) 
+</pre>
+```{r}
+boxplot(height)
+boxplot(height~bloodtype)
+```
+
+## hist
+<pre>
+hist(하나의 변수) # 연속형변수
+</pre>
+```{r}
+par(mfrow=c(2,1))
+hist(height)  # 하나의 변수
+hist(height, breaks=1, prob=T)
+hist(height, breaks=1)
+hist(height, prob=T)
+```
+
+# 확인용 
+```{r}
+par(mfrow=c(1,2))
+hist(height, breaks=1, prob=T)
+hist(height, breaks=1)
+```
+
+```{r}
+#help(hist)
+length(height)
+data.frame(height, height/17)
+```
+
+## 저수준 함수
+```{r}
+par(mfrow=c(1,1))
+hist(height, breaks=10, prob=T)
+lines(density(height))
+```
+
+```{r}
+
+hist(height, breaks=10, prob=T)
+
+range(height)
+BPoint = seq(min(height), max(height)+7, by=7)
+BPoint
+hist(height, breaks=BPoint)
+```
+
+## breaks 포인트를 5로 나누기
+```{r}
+BPoint = seq(min(height), max(height)+5, by=5)
+BPoint
+hist(height, breaks=BPoint)
+```
+
+## breaks 포인트를 10로 나누기
+```{r}
+BPoint = seq(min(height), max(height)+10, by=10)
+BPoint
+hist(height, breaks=BPoint)
+```
+
+## 2,3 열의 그래프를 그린다.
+<pre>
+1행 1열 height, weight 에 대한 산점도
+1행 2열 성별, weight에 대한 Boxplot 그리기
+1행 3열에는 혈액형별  빈도수 구하기 barplot
+2행 1열 boxplot (height)
+2행 2열 boxplot (혈액형별 height)
+2행 3열 histgram(height에 대한 density - breaks 5단위)
+<pre>
+```{r}
+par(mfrow=c(2,3))
+
+plot(weight, height)
+plot(sex, height)
+barplot(table(bloodtype))
+boxplot(height)
+boxplot(height~bloodtype)
+BPoint = seq(min(height), max(height)+5, by=5)
+BPoint
+hist(height, breaks=BPoint)
+```
+
+## 한 그래프에 두개의 그래프 그려보기
+```{r}
+TS1 <- c(round(runif(30)*100))
+TS2 <- c(round(runif(30)*100))
+TS3 <- c(round(runif(30)*100))
+TS1
+TS2
+TS3
+plot(TS1, type="l")
+lines(TS2, col="red", lty="dashed")
+lines(TS3, col="blue", lty="dashed")
+```
+
+```{r}
+runif(30)*100
+
+```
+
+```{r}
+#help(plot)
+par(mfrow=c(2,2))
+plot(weight, type="p")
+plot(weight, type="l")
+plot(weight, type="b")
+plot(weight, type="s")
+```
+
+## ggplot2
+```{r}
+#install.packages("ggplot2")
+#install.packages("ggthemes")
+library(ggplot2)
+library(ggthemes)
+```
+
+## ggplot2
+<pre>
+dataset : diamond
+</pre>
+```{r}
+dim(diamonds)
+str(diamonds)
+head(diamonds)
+summary(diamonds)
+names(diamonds)
+```
+
+
+<pre>
+ggplot() 
+geom_point()
+theme_wsj
+</pre>
+```{r}
+#help(diamonds)
+names(diamonds)
+ggplot(data=diamonds, 
+       aes(x=carat, y=price, colour=clarity)) +
+       geom_point() +
+       theme_wsj()
+```
+
+```{r}
+g1 <- ggplot(data=diamonds, 
+       aes(x=carat, y=price, colour=clarity))
+g2 <- geom_point()
+g3 <- theme_wsj()
+g1 + g2 + g3
+plot(diamonds$carat, diamonds$price)
+
+g1 + g2 + theme_bw()
+```
+
+```{r}
+DF
+g1 <- ggplot(DF)
+```
+
+### ggplot2, point, line, size
+<pre>
+x축 weight, y축 height, 색구분 : bloodtype
+(1) 점으로 해보기
+(2) 선으로 그려보기
+(3) 점의 사이즈를 키워보기
+(4) 성별로 나눠서 그래프를 보기
+facet_grid() : facet_grid(.~sex)
+</pre>
+```{r}
+g1 <- ggplot(DF, aes(x=height, y=weight,           colour=bloodtype))
+g2_p <- geom_point(size=10)
+g2_l <- geom_line(size=2)
+g3 <- facet_grid(.~sex)
+g1 + g2_p + g2_l + g3
+```
+```{r}
+mtcars
+g1 <- ggplot(mtcars, aes(disp, mpg))
+g2_p <- geom_point(size=5)
+#g2_l <- geom_line(size=2)
+g3 <- facet_grid(.~cyl)
+#g
+g1 + g2_p
+g1 + g2_p + g2_l + g3
+```
+
+## barplot를 ggplot로 
+```{r}
+DF
+g1 <- ggplot(DF, aes(x=bloodtype, fill=sex))
+#g2_p <- geom_point(size=5)
+#g2_l <- geom_line(size=2)
+g2_b <- geom_bar(position = "dodge", width=0.3)
+#g3 <- facet_grid(.~cyl)
+#g
+g1 + g2_b
+
+```
+```{r}
+table(bloodtype,sex)
+```
+
